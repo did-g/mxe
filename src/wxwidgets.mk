@@ -4,19 +4,14 @@ PKG             := wxwidgets
 $(PKG)_WEBSITE  := https://www.wxwidgets.org/
 $(PKG)_DESCR    := wxWidgets
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 3.0.2
-$(PKG)_CHECKSUM := 346879dc554f3ab8d6da2704f651ecb504a22e9d31c17ef5449b129ed711585d
+$(PKG)_VERSION  := 3.0.4
+$(PKG)_CHECKSUM := 96157f988d261b7368e5340afa1a0cad943768f35929c22841f62c25b17bf7f0
+$(PKG)_GH_CONF := wxWidgets/wxWidgets/releases/latest,v
 $(PKG)_SUBDIR   := wxWidgets-$($(PKG)_VERSION)
 $(PKG)_FILE     := wxWidgets-$($(PKG)_VERSION).tar.bz2
-$(PKG)_URL      := https://$(SOURCEFORGE_MIRROR)/project/wxwindows/$($(PKG)_VERSION)/$($(PKG)_FILE)
+$(PKG)_URL      := https://github.com/wxWidgets/wxWidgets/releases/download/v$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_DEPS     := cc expat jpeg libiconv libpng sdl tiff zlib
 
-define $(PKG)_UPDATE
-    $(WGET) -q -O- 'https://sourceforge.net/projects/wxwindows/files/' | \
-    $(SED) -n 's,.*/projects/.*/\([0-9][^"]*\)/".*,\1,p' | \
-    sort -V | \
-    tail -1
-endef
 
 define $(PKG)_CONFIGURE_OPTS
         $(MXE_CONFIGURE_OPTS) \
