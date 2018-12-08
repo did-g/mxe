@@ -31,6 +31,7 @@ define $(PKG)_CONFIGURE_OPTS
         --with-expat=sys \
         --with-sdl \
         --without-gtk \
+        --with-xlocale \
         --without-macosx-sdk \
         --without-libxpm \
         --without-libmspack \
