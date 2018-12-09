@@ -17,6 +17,7 @@ define $(PKG)_CONFIGURE_OPTS
         $(MXE_CONFIGURE_OPTS) \
         --disable-option-checking \
         --enable-gui \
+        --enable-debug \
         --disable-stl \
         --enable-threads \
         --disable-universal \
@@ -31,7 +32,6 @@ define $(PKG)_CONFIGURE_OPTS
         --with-expat=sys \
         --with-sdl \
         --without-gtk \
-        --with-xlocale \
         --without-macosx-sdk \
         --without-libxpm \
         --without-libmspack \
@@ -43,13 +43,10 @@ define $(PKG)_CONFIGURE_OPTS
 endef
 
 define $(PKG)_BUILD
-    # build the wxWidgets variant with unicode support
+    # build wxWidgets
     mkdir '$(1).unicode'
-    cd    '$(1).unicode' && '$(1)/configure' \
-        $($(PKG)_CONFIGURE_OPTS) \
-        --enable-unicode
-    $(MAKE) -C '$(1).unicode' -j '$(JOBS)' \
-        $(MXE_DISABLE_CRUFT)
+    cd    '$(1).unicode' && '$(1)/configure' $($(PKG)_CONFIGURE_OPTS)
+    $(MAKE) -C '$(1).unicode' -j '$(JOBS)' $(MXE_DISABLE_CRUFT)
     -$(MAKE) -C '$(1).unicode/locale' -j '$(JOBS)' allmo \
         $(MXE_DISABLE_CRUFT)
     $(MAKE) -C '$(1).unicode' -j 1 install \
