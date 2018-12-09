@@ -4,11 +4,11 @@ PKG             := wxwidgets31
 $(PKG)_WEBSITE  := https://www.wxwidgets.org/
 $(PKG)_DESCR    := wxWidgets
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 3.1.1
-$(PKG)_CHECKSUM := c925dfe17e8f8b09eb7ea9bfdcfcc13696a3e14e92750effd839f5e10726159e
+$(PKG)_VERSION  := 3.1.2
+$(PKG)_CHECKSUM := 7aa0e9e95d969e47c989288016a04bb5c117f09da6f2e55bbb19c0a33e33f96e
 $(PKG)_GH_CONF := wxWidgets/wxWidgets/releases/latest,v
 $(PKG)_SUBDIR   := wxWidgets-$($(PKG)_VERSION)
-$(PKG)_FILE     := wxWidgets-$($(PKG)_VERSION).tar.bz2
+$(PKG)_FILE     := wxWidgets-$($(PKG)_VERSION).tar.gz
 $(PKG)_URL      := https://github.com/wxWidgets/wxWidgets/releases/download/v$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_DEPS     := cc expat jpeg libiconv libpng sdl tiff zlib
 
