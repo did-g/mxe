@@ -1,0 +1,105 @@
+diff --git a/include/wx/defs.h b/include/wx/defs.h
+index eb9c29afa8..a462ced19b 100644
+--- a/include/wx/defs.h
++++ b/include/wx/defs.h
+@@ -710,6 +710,17 @@ typedef short int WXTYPE;
+ #   define wxGCC_WARNING_RESTORE(x)
+ #endif
+ 
++/* Specific macros for -Wcast-function-type warning new in gcc 8. */
++#if wxCHECK_GCC_VERSION(8, 0)
++    #define wxGCC_WARNING_SUPPRESS_CAST_FUNCTION_TYPE() \
++        wxGCC_WARNING_SUPPRESS(cast-function-type)
++    #define wxGCC_WARNING_RESTORE_CAST_FUNCTION_TYPE() \
++        wxGCC_WARNING_RESTORE(cast-function-type)
++#else
++    #define wxGCC_WARNING_SUPPRESS_CAST_FUNCTION_TYPE()
++    #define wxGCC_WARNING_RESTORE_CAST_FUNCTION_TYPE()
++#endif
++
+ /*
+     Combination of the two variants above: should be used for deprecated
+     functions which are defined inline and are used by wxWidgets itself.
+diff --git a/include/wx/event.h b/include/wx/event.h
+index 61ec19c5b3..907225e1c9 100644
+--- a/include/wx/event.h
++++ b/include/wx/event.h
+@@ -142,10 +142,31 @@ extern WXDLLIMPEXP_BASE wxEventType wxNewEventType();
+         extern const expdecl wxEventType name
+ #endif // wxHAS_EVENT_BIND/!wxHAS_EVENT_BIND
+ 
++// The type-erased method signature used for event handling.
++typedef void (wxEvtHandler::*wxEventFunction)(wxEvent&);
++
++template <typename T>
++inline wxEventFunction wxEventFunctionCast(void (wxEvtHandler::*func)(T&))
++{
++    // There is no going around the cast here: we do rely calling the event
++    // handler method, which takes a reference to an object of a class derived
++    // from wxEvent, as if it took wxEvent itself. On all platforms supported
++    // by wxWidgets, this cast is harmless, but it's not a valid cast in C++
++    // and gcc 8 started giving warnings about this (with -Wextra), so suppress
++    // them locally to avoid generating hundreds of them when compiling any
++    // code using event table macros.
++
++    wxGCC_WARNING_SUPPRESS_CAST_FUNCTION_TYPE()
++
++    return reinterpret_cast<wxEventFunction>(func);
++
++    wxGCC_WARNING_RESTORE_CAST_FUNCTION_TYPE()
++}
++
+ // Try to cast the given event handler to the correct handler type:
+ 
+ #define wxEVENT_HANDLER_CAST( functype, func ) \
+-    ( wxObjectEventFunction )( wxEventFunction )wxStaticCastEvent( functype, &func )
++    wxEventFunctionCast(static_cast<functype>(&func))
+ 
+ 
+ #ifdef wxHAS_EVENT_BIND
+@@ -327,8 +348,8 @@ struct HandlerImpl<T, A, true>
+     static wxEvtHandler *ConvertToEvtHandler(T *p)
+         { return p; }
+     static wxEventFunction ConvertToEvtMethod(void (T::*f)(A&))
+-        { return static_cast<wxEventFunction>(
+-                    reinterpret_cast<void (T::*)(wxEvent&)>(f)); }
++        { return wxEventFunctionCast(
++                    static_cast<void (wxEvtHandler::*)(A&)>(f)); }
+ };
+ 
+ // specialization for handlers not deriving from wxEvtHandler
+diff --git a/include/wx/list.h b/include/wx/list.h
+index 160b3b8ba4..cd68c03070 100644
+--- a/include/wx/list.h
++++ b/include/wx/list.h
+@@ -863,7 +863,7 @@ private:
+             Node* m_init;                                                   \
+         public:                                                             \
+             typedef const_reference reference_type;                         \
+-            typedef const ptr_type pointer_type;                            \
++            typedef const value_type* pointer_type;                         \
+                                                                             \
+             const_iterator(Node* node, Node* init)                          \
+                 : m_node(node), m_init(init) { }                            \
+@@ -955,7 +955,7 @@ private:
+             Node* m_init;                                                   \
+         public:                                                             \
+             typedef const_reference reference_type;                         \
+-            typedef const ptr_type pointer_type;                            \
++            typedef const value_type* pointer_type;                         \
+                                                                             \
+             const_reverse_iterator(Node* node, Node* init)                  \
+                 : m_node(node), m_init(init) { }                            \
+diff --git a/include/wx/math.h b/include/wx/math.h
+index bf5b8922a9..11dfb9de85 100644
+--- a/include/wx/math.h
++++ b/include/wx/math.h
+@@ -90,7 +90,7 @@
+         #define wxFinite(x) isfinite(x)
+     #endif
+ #elif defined(wxNEEDS_STRICT_ANSI_WORKAROUNDS)
+-    wxDECL_FOR_STRICT_MINGW32(int, _finite, (double));
++    wxDECL_FOR_STRICT_MINGW32(int, _finite, (double))
+ 
+     #define wxFinite(x) _finite(x)
+ #elif ( defined(__GNUG__)||defined(__GNUWIN32__)||defined(__DJGPP__)|| \
