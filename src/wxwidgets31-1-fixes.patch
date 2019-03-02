@@ -8,39 +8,6 @@ Date: Fri, 26 May 2017 09:33:22 +0200
 Subject: [PATCH 1/1] make it possible to install DLLs into $(libdir)/../bin
 
 
-diff --git a/configure b/configure
-index 96aa1417..cc627a35 100755
---- a/configure
-+++ b/configure
-@@ -35627,8 +35627,8 @@ int
- main ()
- {
- 
--        locale_t t;
--        strtod_l(NULL, NULL, t);
-+        _locale_t t;
-+        _strtod_l(NULL, NULL, t);
- 
-   ;
-   return 0;
-diff --git a/include/wx/compiler.h b/include/wx/compiler.h
-index 7ff45740..65f0e89e 100644
---- a/include/wx/compiler.h
-+++ b/include/wx/compiler.h
-@@ -93,8 +93,13 @@
-    This macro can be used to test the Visual C++ version.
- */
- #ifndef __VISUALC__
-+#ifdef __WINDOWS__
-+#   define wxVISUALC_VERSION(major) 0
-+#   define wxCHECK_VISUALC_VERSION(major) 1
-+#else
- #   define wxVISUALC_VERSION(major) 0
- #   define wxCHECK_VISUALC_VERSION(major) 0
-+#endif
- #else
-     /*
-         Things used to be simple with the _MSC_VER value and the version number
 diff --git a/include/wx/xlocale.h b/include/wx/xlocale.h
 index 476a3a73..577a15dc 100644
 --- a/include/wx/xlocale.h
